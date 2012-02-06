@@ -26,7 +26,7 @@ import javax.swing.plaf.metal.MetalIconFactory.FolderIcon16;
 import crawl.Util;
 
 /**
- * @author Mads,
+ * @author Mads, 
  * 
  */
 @SuppressWarnings("serial")
