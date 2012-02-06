@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.plaf.metal.MetalIconFactory.FolderIcon16;
 
 import crawl.Util;
 
@@ -76,7 +77,7 @@ public class Search extends JFrame {
 							while (rs.next()) {
 								counter++;
 								String path = rs.getString("path");
-//								System.out.println("filepath = " + path);
+								// System.out.println("filepath = " + path);
 								path = path.replace("\\", fileSeperator);
 
 								writeAndMarkArticleInFile(
@@ -90,25 +91,32 @@ public class Search extends JFrame {
 							}
 
 							System.out.println("antall rader: " + counter);
-							int yesNoOption = JOptionPane
-									.showConfirmDialog(
-											null,
-											"Fant artikkelen på "
-													+ counter
-													+ " forsider. Har generert disse sidene for visning i mappe: "
-													+ pathToFolder
-													+ ". Åpne denne mappen nå?",
-											"tl;dr; åpne mappe?",
-											JOptionPane.YES_NO_OPTION);
+							JOptionPane.showMessageDialog(null,
+									"Fant artikkelen på " + counter
+											+ " forsider. Kikk i " + pathToFolder);
 
-							if (yesNoOption == JOptionPane.YES_OPTION) {
-								try {
-									Desktop.getDesktop().open(
-											new File(pathToFolder));
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							}
+							// int yesNoOption = JOptionPane
+							// .showConfirmDialog(
+							// null,
+							// "Fant artikkelen på "
+							// + counter
+							// +
+							// " forsider. Har generert disse sidene for visning i mappe: "
+							// + pathToFolder
+							// + ". Åpne denne mappen nå?",
+							// "tl;dr; Åpne mappe?",
+							// JOptionPane.YES_NO_OPTION);
+							//
+							// if (yesNoOption == JOptionPane.YES_OPTION) {
+							// try {
+							// System.out.println(pathToFolder);
+							// Desktop.getDesktop().open(
+							// new File(pathToFolder));
+							// System.out.println("nå er det åpent");
+							// } catch (IOException e) {
+							// e.printStackTrace();
+							// }
+							// }
 
 						} catch (SQLException e) {
 							e.printStackTrace();
