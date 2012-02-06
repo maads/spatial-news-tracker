@@ -43,7 +43,6 @@ Thumbs.db
 
 # Misc #
 #####################
-.project
 .settings/
 .classpath
 *~
