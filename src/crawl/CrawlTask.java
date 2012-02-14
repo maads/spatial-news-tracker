@@ -199,8 +199,10 @@ public class CrawlTask extends TimerTask {
 	try {
 	    Class.forName("org.sqlite.JDBC");
 	    conn = DriverManager.getConnection("jdbc:sqlite:avis.db");
-	    Statement stat = conn.createStatement();
-	    stat.executeUpdate("create table if not exists avisArtikler (url, path);");
+	    if (conn != null) {
+			Statement stat = conn.createStatement();
+			stat.executeUpdate("create table if not exists avisArtikler (url, path);");
+		}
 
 	} catch (ClassNotFoundException e) {
 	    e.printStackTrace();
