@@ -4,6 +4,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Timer;
 
 import javax.swing.JButton;
@@ -35,8 +36,11 @@ public class AvisCrawl extends Thread {
 	// Needed for making it OS independent. This is "/" on UNIX and "\" on
 	// Windows.
 	static String fileSeperator = System.getProperty("file.separator");
+	
+	public static int taskCounter = 0; 
 
 	public AvisCrawl() {
+		System.out.println("started " + new Date(System.currentTimeMillis()).toString());
 		initGUI();
 	}
 
