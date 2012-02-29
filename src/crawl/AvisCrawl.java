@@ -23,7 +23,6 @@ public class AvisCrawl extends Thread {
 	public static ArrayList<ArrayList<String>> allArticleOld = new ArrayList<ArrayList<String>>();
 	public static ArrayList<ArrayList<String>> allArticleOldBT = new ArrayList<ArrayList<String>>();
 	public static ArrayList<ArrayList<String>> allArticleBT = new ArrayList<ArrayList<String>>();
-	public static ArrayList<String> articlebt = new ArrayList<String>();
 
 	static JLabel label;
 	JButton startbtn;
@@ -32,6 +31,8 @@ public class AvisCrawl extends Thread {
 	protected boolean isRunning = false;
 
 	private JButton sokBtn;
+	
+
 
 	// Needed for making it OS independent. This is "/" on UNIX and "\" on
 	// Windows.

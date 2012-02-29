@@ -19,10 +19,7 @@ import java.util.TimerTask;
 
 public class CrawlTask extends TimerTask {
 
-	public static ArrayList<ArrayList<String>> allArticle = new ArrayList<ArrayList<String>>();
-	public static ArrayList<ArrayList<String>> allArticleOld = new ArrayList<ArrayList<String>>();
-	public static ArrayList<String> articleURLs = new ArrayList<String>();
-	public static ArrayList<String> article = new ArrayList<String>();
+
 
 	static DateFormat dateFormat = new SimpleDateFormat("HH.mm.ss_dd-MM-yyyy");
 	static Date date;
@@ -32,7 +29,10 @@ public class CrawlTask extends TimerTask {
 	static String fileSeperator = System.getProperty("file.separator");
 	static String filepath;
 
+	
 	static Connection conn;
+	private ArrayList<String> article = new ArrayList<String>();
+	private static ArrayList<String> articleURLs = new ArrayList<String>();
 
 	@Override
 	public void run() {
@@ -47,11 +47,11 @@ public class CrawlTask extends TimerTask {
 			initDB();
 			String vg = crawl("http://www.vg.no/", "vg");
 
-			if (!allArticleOld.equals(allArticle)) {
+			if (!AvisCrawl.allArticleOld.equals(AvisCrawl.allArticle)) {
 
-				allArticleOld.clear();
-				allArticleOld.addAll(allArticle);
-				allArticle.clear();
+				AvisCrawl.allArticleOld.clear();
+				AvisCrawl.allArticleOld.addAll(AvisCrawl.allArticle);
+				AvisCrawl.allArticle.clear();
 			
 				AvisCrawl.setLabelText(dateNow); // stygg hack.. :/
 				createArticleFolder(dateDay);
@@ -61,7 +61,8 @@ public class CrawlTask extends TimerTask {
 				Util.WriteToFileLineByLine(filepath, dateNow + vg);
 				insertArticleInDB();
 			}
-			allArticle.clear();
+			AvisCrawl.allArticle.clear();
+			articleURLs.clear();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -77,7 +78,7 @@ public class CrawlTask extends TimerTask {
 			try {
 				PreparedStatement prep = conn
 						.prepareStatement("insert into avisArtikler values(?,?);");
-
+				int counter = 0;
 				for (String url : articleURLs) {
 					if (isValid(url) && !exists(url, filepath)) { // vil ikke ha
 																	// duplikater
@@ -86,10 +87,12 @@ public class CrawlTask extends TimerTask {
 						prep.setString(1, url);
 						prep.setString(2, filepath);
 						prep.addBatch();
+						counter++;
 					}
 				}
 				prep.executeBatch();
 				conn.close();
+				System.out.println("\nsatt inn " + counter);
 
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -147,7 +150,7 @@ public class CrawlTask extends TimerTask {
 				page += "\n" + inputLine;
 				if (inArticle) {
 					if (inputLine.trim().equals(endDiv)) {
-						allArticle.add(article);
+						AvisCrawl.allArticle.add(article);
 
 						articleURLs.add(fetchURL(article));
 
