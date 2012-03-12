@@ -30,9 +30,6 @@ public class AvisCrawl extends Thread {
 
 	protected boolean isRunning = false;
 
-	private JButton sokBtn;
-	
-
 
 	// Needed for making it OS independent. This is "/" on UNIX and "\" on
 	// Windows.
@@ -48,10 +45,9 @@ public class AvisCrawl extends Thread {
 	private void initGUI() {
 		JFrame frame = new JFrame("Avis");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(400, 200);
+		frame.setSize(400, 150);
 
 		label = new JLabel();
-		sokBtn = new JButton("Søk i artikler");
 		startbtn = new JButton("Start");
 		startbtn.addActionListener(new ActionListener() {
 			@Override
@@ -76,20 +72,11 @@ public class AvisCrawl extends Thread {
 					JOptionPane.showMessageDialog(null, "Kjører allerede :)");
 			}
 		});
-		textField = new JTextField(
-				"Skriv inn hvor ofte vg.no skal sjekkes (i sekund)");
+		textField = new JTextField();
 		frame.setLayout(new GridLayout(0, 1));
 		frame.add(label);
 		frame.add(textField);
 		frame.add(startbtn);
-		frame.add(sokBtn);
-		sokBtn.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				new Search();
-			}
-		});
 		setLabelText(""); // bare for å vise noe tekst..
 		frame.setVisible(true);
 	}
@@ -102,7 +89,7 @@ public class AvisCrawl extends Thread {
 		if (text.length() > 10)
 			label.setText("Sist oppdatert kl: " + text.substring(0, 8));
 		else
-			label.setText("Enda ikke oppdatert");
+			label.setText("Skriv inn hvor ofte vg.no skal sjekkes (i sekund):");
 	}
 
 	public static void main(String[] args) {

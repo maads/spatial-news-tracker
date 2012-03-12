@@ -39,7 +39,6 @@ public class CrawlTask extends TimerTask {
 		updateDate();
 		
 		AvisCrawl.taskCounter++;
-		System.out.print(AvisCrawl.taskCounter + "("+ dateNow.substring(0, 8)+"),");
 		if(AvisCrawl.taskCounter % 40 == 0)
 			System.out.println("\n" + dateNow + " | Number of tasks started in this run so far: " + AvisCrawl.taskCounter);
 		
@@ -53,7 +52,7 @@ public class CrawlTask extends TimerTask {
 				AvisCrawl.allArticleOld.addAll(AvisCrawl.allArticle);
 				AvisCrawl.allArticle.clear();
 			
-				AvisCrawl.setLabelText(dateNow); // stygg hack.. :/
+				AvisCrawl.setLabelText(dateNow); 
 				createArticleFolder(dateDay);
 				String file = dateDay + fileSeperator + "VG-" + dateNow
 						+ ".html";
@@ -92,8 +91,6 @@ public class CrawlTask extends TimerTask {
 				}
 				prep.executeBatch();
 				conn.close();
-				System.out.println("\nsatt inn " + counter);
-
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
