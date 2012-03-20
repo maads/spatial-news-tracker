@@ -43,7 +43,8 @@ public class Search extends JFrame {
 	}
 
 	private void initGUI() {
-		urlInputField = new JTextField("Lim inn artikkel-URL");
+		urlInputField = new JTextField();
+//				"Lim inn artikkel-URL");
 		setLayout(new GridLayout(0, 1));
 		searchBtn = new JButton("Generer 'tidslinje' basert på artikkel");
 		this.add(urlInputField);
