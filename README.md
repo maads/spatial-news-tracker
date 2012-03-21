@@ -5,7 +5,11 @@ Det er tiltenkt at det skal være mer generisk enn kun til bruk på VG.no, men d
 
 
 ## Bruk
-Lag kjørbar jar-fil. Kjør denne.
+Lag kjørbar jar-fil. Kjør denne fra console
+
+java -jar filnavn.jar
+
+ps. foreløpig uten GUI.
 
 ## Lisens
 
