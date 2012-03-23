@@ -42,8 +42,6 @@ public class SntTask extends TimerTask {
 	private static String newHash;
 	private static Elements articleURLs;
 
-	// TODO GUI
-
 	public SntTask() {
 		Document doc = null;
 		try {

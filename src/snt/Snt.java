@@ -9,8 +9,8 @@ import org.jsoup.select.Elements;
 public class Snt {
 
 	public static String latestHash;
-
-	public static void main(String[] args) {
+	
+	public Snt(long intervall) {
 
 		Document doc = null;
 		try {
@@ -26,12 +26,17 @@ public class Snt {
 			latestHash = "md5hash" ; //MD5(artikler);
 
 			 Timer t = new Timer();
-			 t.scheduleAtFixedRate(new SntTask(), 0, 15000);
+			 t.scheduleAtFixedRate(new SntTask(), 0, intervall);
 		}
 
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	    
+	}
+
+	public static void main(String[] args) {
+	    new Snt(15000);
 	}
 	public static String MD5(Object obj)
 			throws java.security.NoSuchAlgorithmException {
