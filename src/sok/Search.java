@@ -1,6 +1,5 @@
 package sok;
 
-import java.awt.Desktop;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,9 +20,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.plaf.metal.MetalIconFactory.FolderIcon16;
-
-import crawl.Util;
 
 /**
  * @author Mads, 
@@ -31,7 +27,6 @@ import crawl.Util;
  */
 @SuppressWarnings("serial")
 public class Search extends JFrame {
-
 	private JTextField urlInputField;
 	private JButton searchBtn;
 	static Connection conn;
@@ -39,19 +34,17 @@ public class Search extends JFrame {
 	private String fileSeperator = System.getProperty("file.separator");
 
 	public Search() {
-		initGUI();
+			initGUI();
 	}
 
 	private void initGUI() {
 		urlInputField = new JTextField("Lim inn artikkel-URL");
 		setLayout(new GridLayout(0, 1));
-		searchBtn = new JButton("Generer 'tidslinje' basert på artikkel");
+		searchBtn = new JButton("Generer 'tidslinje' basert p� artikkel");
 		this.add(urlInputField);
 		this.add(searchBtn);
-		searchBtn.addActionListener(new ActionListener() {// egen classe for
-					// actionListner
+		searchBtn.addActionListener(new ActionListener() {// egen classe for actionListner
 
-					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						initDB();
 						int counter = 0;
@@ -62,22 +55,14 @@ public class Search extends JFrame {
 							File f = new File("output");
 							if (!f.exists()) {
 								f.mkdir();
-
-								f = new File(pathToFolder + fileSeperator
-										+ "css");
-								f.mkdir();
-								Util.generateCSSFolder(pathToFolder);
 							}
-
 							stat = conn.createStatement();
 							ResultSet rs = stat
-									.executeQuery("select distinct path from avisArtikler where url = '"
-											+ getInputField() + "';");
+									.executeQuery("select distinct path from avisArtikler where url = '" + getInputField() + "';");
 
 							while (rs.next()) {
 								counter++;
 								String path = rs.getString("path");
-								// System.out.println("filepath = " + path);
 								path = path.replace("\\", fileSeperator);
 
 								writeAndMarkArticleInFile(
@@ -87,37 +72,10 @@ public class Search extends JFrame {
 												+ fileSeperator
 												+ path.substring(path
 														.indexOf(fileSeperator)));
-
 							}
-
-							System.out.println("antall rader: " + counter);
 							JOptionPane.showMessageDialog(null,
-									"Fant artikkelen på " + counter
+									"Fant artikkelen p� " + counter
 											+ " forsider. Kikk i " + pathToFolder);
-
-							// int yesNoOption = JOptionPane
-							// .showConfirmDialog(
-							// null,
-							// "Fant artikkelen på "
-							// + counter
-							// +
-							// " forsider. Har generert disse sidene for visning i mappe: "
-							// + pathToFolder
-							// + ". Åpne denne mappen nå?",
-							// "tl;dr; Åpne mappe?",
-							// JOptionPane.YES_NO_OPTION);
-							//
-							// if (yesNoOption == JOptionPane.YES_OPTION) {
-							// try {
-							// System.out.println(pathToFolder);
-							// Desktop.getDesktop().open(
-							// new File(pathToFolder));
-							// System.out.println("nå er det åpent");
-							// } catch (IOException e) {
-							// e.printStackTrace();
-							// }
-							// }
-
 						} catch (SQLException e) {
 							e.printStackTrace();
 							JOptionPane.showMessageDialog(null,
@@ -128,12 +86,13 @@ public class Search extends JFrame {
 						} finally {
 							closeWindow();
 						}
-
+						
+				
 					}
 
 				});
 		this.setSize(700, 150);
-		this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
 	}
 
@@ -169,6 +128,8 @@ public class Search extends JFrame {
 		BufferedReader in;
 		String inputLine;
 
+		// ta dokumentet. skift url til css med .../dato/css/, samme med bilder...
+		
 		String startDiv = "<div class=\"article-content\">";
 		String endDiv = "</div>";
 		boolean inArticle = false;
@@ -204,14 +165,7 @@ public class Search extends JFrame {
 	}
 
 	private String markArticle(String article, String url) {
-		if (article.indexOf(url) != -1) {
-			String tempArticle = article.substring(article
-					.lastIndexOf("<div class=\"article-header\">") + 1);
-
-			String markedArticle = "<div class=\"article-content\" style=\"border:5px solid red;\">\n"
-					+ tempArticle + "</div>\n";
-			return markedArticle;
-		}
+		//TODO fix this.
 		return article;
 	}
 
