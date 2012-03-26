@@ -3,6 +3,7 @@
 bin/
 output/
 META-INF/
+*-2012/
 
 
 # Compiled source #
