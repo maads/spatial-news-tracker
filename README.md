@@ -5,6 +5,9 @@ Det er tiltenkt at det skal være mer generisk enn kun til bruk på VG.no, men d
 
 
 ## Bruk
+
+Bruker bibliotekene [SQLite](http://www.zentus.com/sqlitejdbc/) og [JSoup](http://jsoup.org/)
+
 Lag kjørbar jar-fil. Kjør denne fra console:
 
 java -jar filnavn.jar
