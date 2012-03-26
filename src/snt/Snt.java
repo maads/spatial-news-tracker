@@ -36,7 +36,7 @@ public class Snt {
 	}
 
 	public static void main(String[] args) {
-	    new Snt(15000);
+	    new Snt(30000);
 	}
 	public static String MD5(Object obj)
 			throws java.security.NoSuchAlgorithmException {
