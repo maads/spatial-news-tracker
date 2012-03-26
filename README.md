@@ -9,7 +9,7 @@ Lag kjørbar jar-fil. Kjør denne fra console:
 
 java -jar filnavn.jar
 
-ps. foreløpig uten GUI. Sjekker vg.no hvert 30 sekund.
+Sjekker vg.no hvert 30 sekund ved kjøring uten GUI. Ved bruk av GUI kan en velge selv hvilket intervall som skal brukes.
 
 ## Lisens
 
