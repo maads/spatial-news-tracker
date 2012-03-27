@@ -3,25 +3,32 @@ package sok;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 /**
- * @author Mads, 
+ * @author Mads,
  * 
  */
 @SuppressWarnings("serial")
@@ -33,7 +40,7 @@ public class Search extends JFrame {
 	private String fileSeperator = System.getProperty("file.separator");
 
 	public Search() {
-			initGUI();
+		initGUI();
 	}
 
 	private void initGUI() {
@@ -42,7 +49,8 @@ public class Search extends JFrame {
 		searchBtn = new JButton("Generer 'tidslinje' basert på artikkel");
 		this.add(urlInputField);
 		this.add(searchBtn);
-		searchBtn.addActionListener(new ActionListener() {// egen classe for actionListner
+		searchBtn.addActionListener(new ActionListener() {// egen classe for
+					// actionListner
 
 					public void actionPerformed(ActionEvent arg0) {
 						initDB();
@@ -51,30 +59,30 @@ public class Search extends JFrame {
 								+ fileSeperator + "output";
 						Statement stat;
 						try {
-							File f = new File("output");
-							if (!f.exists()) {
-								f.mkdir();
-							}
+							makeDirs();
 							stat = conn.createStatement();
 							ResultSet rs = stat
-									.executeQuery("select distinct path from avisArtikler where url = '" + getInputField() + "';");
+									.executeQuery("select distinct path from avisArtikler where url = '"
+											+ getInputField() + "';");
 
 							while (rs.next()) {
 								counter++;
 								String path = rs.getString("path");
 								path = path.replace("\\", fileSeperator);
-
-								writeAndMarkArticleInFile(
-										getInputField(),
-										path,
+								Document doc = Jsoup.parse(new File(path),
+										"UTF-8");
+								fixCSSandImages(doc, true);
+								WriteToFile(
 										"output"
 												+ fileSeperator
 												+ path.substring(path
-														.indexOf(fileSeperator)));
+														.indexOf(fileSeperator)),
+										markArticleinFile(getInputField(), doc));
 							}
 							JOptionPane.showMessageDialog(null,
 									"Fant artikkelen på " + counter
-											+ " forsider. Kikk i " + pathToFolder);
+											+ " forsider. Kikk i "
+											+ pathToFolder);
 						} catch (SQLException e) {
 							e.printStackTrace();
 							JOptionPane.showMessageDialog(null,
@@ -85,14 +93,28 @@ public class Search extends JFrame {
 						} finally {
 							closeWindow();
 						}
-						
-				
+
 					}
 
 				});
 		this.setSize(700, 150);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
+	}
+
+	private void makeDirs() {
+		File f = new File("output");
+		if (!f.exists()) {
+			f.mkdir();
+		}
+		f = new File("output" + fileSeperator + "css");
+		if (!f.exists()) {
+			f.mkdir();
+		}
+		f = new File("output" + fileSeperator + "images");
+		if (!f.exists()) {
+			f.mkdir();
+		}
 	}
 
 	protected void closeWindow() {
@@ -117,55 +139,73 @@ public class Search extends JFrame {
 		}
 	}
 
-	private void writeAndMarkArticleInFile(String url, String inputPath,
-			String outputPath) {
-		WriteToFile(outputPath, markArticleinFile(url, inputPath));
-
-	}
-
-	private String markArticleinFile(String url, String inputPath) {
-		BufferedReader in;
-		String inputLine;
-
-		// ta dokumentet. skift url til css med .../dato/css/, samme med bilder...
-		
-		String startDiv = "<div class=\"article-content\">";
-		String endDiv = "</div>";
-		boolean inArticle = false;
-		StringBuilder page = new StringBuilder();
-
-		StringBuilder tempLines = new StringBuilder();
-		try {
-			in = new BufferedReader(new FileReader(inputPath));
-			while ((inputLine = in.readLine()) != null) {
-				if (inArticle) {
-					tempLines.append("\n" + inputLine);
-					if (inputLine.equals(endDiv)) {
-						page.append(markArticle(tempLines.toString(), url));
-						tempLines = new StringBuilder();
-						inArticle = false;
-					}
-				} else {
-					if (inputLine.trim().equals(startDiv)) {
-						tempLines.append("\n" + inputLine);
-						inArticle = true;
-					} else {
-						page.append("\n" + inputLine);
-					}
+	private String markArticleinFile(String url, Document document)
+			throws IOException {
+		Elements articles = document.select(".article-content");
+		for (Element article : articles) {
+			Elements articleLinks = article.select("a[href]");
+			for (int i = 0; i < articleLinks.size(); i++) {
+				if (articleLinks.get(i).attr("href").equals(url)) {
+					System.out.println(url);
+					article.attr("style", "background-color:yellow;");
+					break;
 				}
 			}
-			in.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		return page.toString();
+		return document.html();
 	}
 
-	private String markArticle(String article, String url) {
-		//TODO fix this.
-		return article;
+	private Document fixCSSandImages(Document doc, boolean export)
+			throws IOException {
+
+		String tempDato = doc.baseUri().substring(0,
+				doc.baseUri().lastIndexOf(fileSeperator));
+		String dato = tempDato.substring(
+				tempDato.lastIndexOf(fileSeperator) + 1, tempDato.length());
+		System.out.println(dato);
+		Elements csss = doc.select("link[type=text/css]");
+		if (!export) {
+			for (Element cs : csss) {
+				cs.attr("href", ".." + fileSeperator + dato + fileSeperator
+						+ "css" + fileSeperator + dato + ".css");
+			}
+
+			Elements imgs = doc.select("img[src]");
+			for (Element img : imgs) {
+				String prevLink = img.attr("src");
+				img.attr("src", ".." + fileSeperator + dato + fileSeperator
+						+ prevLink.replace("/", fileSeperator));
+			}
+		} else {
+			String output = System.getProperty("user.dir") + fileSeperator
+					+ "output" + fileSeperator;
+			String[] dirs = { fileSeperator + "images" + fileSeperator,
+					fileSeperator + "css" + fileSeperator };
+			for (String s : dirs) {
+				File startDir = new File(System.getProperty("user.dir")
+						+ fileSeperator + dato + s);
+				File[] files = startDir.listFiles();
+				for (File file : files) {
+					copy(file, new File(output + s + file.getName()));
+				}
+			}
+
+		}
+		return doc;
+	}
+
+	private void copy(File src, File dst) throws IOException {
+		InputStream in = new FileInputStream(src);
+		OutputStream out = new FileOutputStream(dst);
+
+		// Transfer bytes from in to out
+		byte[] buf = new byte[1024];
+		int len;
+		while ((len = in.read(buf)) > 0) {
+			out.write(buf, 0, len);
+		}
+		in.close();
+		out.close();
 	}
 
 	public static void WriteToFile(String pathToNewFile, String output) {

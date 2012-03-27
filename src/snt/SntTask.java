@@ -74,7 +74,7 @@ public class SntTask extends TimerTask {
 				articleURLs = doc.select("a[href]");
 				initDB();
 				insertArticleInDB();
-				getImages(artikler);
+				getImages(doc);
 				Document docRelativeLinker = gjorForsidenRelativ(doc);
 				WriteToFileLineByLine(dateDay + fileseparator + "VG-" + dateNow
 						+ ".html", docRelativeLinker.html());
@@ -107,8 +107,10 @@ public class SntTask extends TimerTask {
 
 		// skifte ut csslink til den paa disk
 		Elements csss = doc.select("link[type=text/css]");
+		
+		// TODO hent ned alle css filer og putt de i samme fil :D 
 		for (Element css : csss) {
-			css.attr("href", "css/general.css");
+			css.attr("href", "css/"+ dateDay + ".css");
 		}
 
 		// fjern <noscript>
@@ -141,13 +143,16 @@ public class SntTask extends TimerTask {
 	private static void lagreCSS(Document doc) {
 		// last ned css til /css/
 		List<String> cssURl = getCSSlink(doc);
+		StringBuilder cssContent = new StringBuilder();
 		for (String css : cssURl) {
-			try {
-				WriteToFileLineByLine(dateDay + fileseparator + "css"
-						+ fileseparator + "general.css", getURLContent(css));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			cssContent.append(getURLContent(css));
+		}
+		
+		try {
+			WriteToFileLineByLine(dateDay + fileseparator + "css"
+					+ fileseparator + dateDay + ".css", cssContent.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -198,7 +203,7 @@ public class SntTask extends TimerTask {
 		return null;
 	}
 
-	private static void getImages(Elements selection) throws IOException {
+	private static void getImages(Document selection) throws IOException {
 		makeFolderIfNotExists(dateDay);
 		makeFolderIfNotExists(dateDay + fileseparator + "images");
 
@@ -206,19 +211,30 @@ public class SntTask extends TimerTask {
 		Elements artikkelBilderTags = selection.select("img[src]");
 		for (Element img : artikkelBilderTags) {
 			String src = img.attr("src");
-			if (!src.contains("?")) {
-				String bildeNavn = src.substring(src.lastIndexOf("/") + 1);
-
-				fos = new FileOutputStream(new File(dateDay + fileseparator
-						+ "images" + fileseparator + bildeNavn));
-
-				if (!src.startsWith("//"))
-
-					ImageIO.write((RenderedImage) saveImages(src),
-							bildeNavn.substring(bildeNavn.length() - 3), fos);
-			} else {
-				// System.out.println("Skippet denne: " + src);
+			
+			
+			if (src.contains("?")) {
+				src = src.substring(0,src.lastIndexOf("?"));
 			}
+			if (src.startsWith("//")){
+				
+			}else if(src.startsWith("/")){
+				src = selection.baseUri() + src;
+			} else if(!isValid(src)){
+				src = selection.baseUri() + src;
+			}
+			
+				
+			String bildeNavn = src.substring(src.lastIndexOf("/") + 1);
+			System.out.println(bildeNavn);
+			fos = new FileOutputStream(new File(dateDay + fileseparator
+					+ "images" + fileseparator + bildeNavn));
+
+			if (!src.startsWith("//"))
+
+				ImageIO.write((RenderedImage) saveImages(src),
+						bildeNavn.substring(bildeNavn.length() - 3), fos);
+
 		}
 	}
 
