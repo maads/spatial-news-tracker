@@ -17,7 +17,7 @@ public class TaskAL implements ActionListener {
 	intervall = SntGUI.getInterval();
 	if(intervall > 0) {
 	    SntGUI.updateGUIafterLaunch();
-//	    new Snt(intervall);
+	    new Snt(intervall);
 	}
     }
 
