@@ -21,7 +21,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import org.jsoup.Jsoup;
