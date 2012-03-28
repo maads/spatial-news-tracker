@@ -18,8 +18,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import org.jsoup.Jsoup;
@@ -36,6 +38,7 @@ public class Search extends JFrame {
 	private JTextField urlInputField;
 	private JButton searchBtn;
 	static Connection conn;
+	private JCheckBox exportCheckbox;
 
 	private String fileSeperator = System.getProperty("file.separator");
 
@@ -46,8 +49,10 @@ public class Search extends JFrame {
 	private void initGUI() {
 		urlInputField = new JTextField("Lim inn artikkel-URL");
 		setLayout(new GridLayout(0, 1));
-		searchBtn = new JButton("Generer 'tidslinje' basert på artikkel");
+		searchBtn = new JButton("Generer 'tidslinje' basert pÃ¥ artikkel");
+		exportCheckbox = new JCheckBox("Kopier filer fra opprinnelig plassering til ny mappe");
 		this.add(urlInputField);
+		this.add(exportCheckbox);
 		this.add(searchBtn);
 		searchBtn.addActionListener(new ActionListener() {// egen classe for
 					// actionListner
@@ -71,7 +76,7 @@ public class Search extends JFrame {
 								path = path.replace("\\", fileSeperator);
 								Document doc = Jsoup.parse(new File(path),
 										"UTF-8");
-								fixCSSandImages(doc, true);
+								fixCSSandImages(doc, exportCheckbox.isSelected());
 								WriteToFile(
 										"output"
 												+ fileSeperator
@@ -80,7 +85,7 @@ public class Search extends JFrame {
 										markArticleinFile(getInputField(), doc));
 							}
 							JOptionPane.showMessageDialog(null,
-									"Fant artikkelen på " + counter
+									"Fant artikkelen pÃ¥ " + counter
 											+ " forsider. Kikk i "
 											+ pathToFolder);
 						} catch (SQLException e) {
@@ -90,6 +95,7 @@ public class Search extends JFrame {
 						} catch (Exception e) {
 							JOptionPane.showMessageDialog(null,
 									"Noe gikk galt. \n" + e.getMessage());
+							e.printStackTrace();
 						} finally {
 							closeWindow();
 						}
@@ -107,13 +113,15 @@ public class Search extends JFrame {
 		if (!f.exists()) {
 			f.mkdir();
 		}
-		f = new File("output" + fileSeperator + "css");
-		if (!f.exists()) {
+		if (exportCheckbox.isSelected()) {
+		    f = new File("output" + fileSeperator + "css");
+		    if (!f.exists()) {
 			f.mkdir();
-		}
-		f = new File("output" + fileSeperator + "images");
-		if (!f.exists()) {
+		    }
+		    f = new File("output" + fileSeperator + "images");
+		    if (!f.exists()) {
 			f.mkdir();
+		    }
 		}
 	}
 
@@ -166,21 +174,19 @@ public class Search extends JFrame {
 		Elements csss = doc.select("link[type=text/css]");
 		if (!export) {
 			for (Element cs : csss) {
-				cs.attr("href", ".." + fileSeperator + dato + fileSeperator
-						+ "css" + fileSeperator + dato + ".css");
+				cs.attr("href", "../" + dato + "/css/" + dato + ".css");
 			}
 
 			Elements imgs = doc.select("img[src]");
 			for (Element img : imgs) {
 				String prevLink = img.attr("src");
-				img.attr("src", ".." + fileSeperator + dato + fileSeperator
-						+ prevLink.replace("/", fileSeperator));
+				img.attr("src", "../" + dato + "/"
+						+ prevLink);
 			}
 		} else {
 			String output = System.getProperty("user.dir") + fileSeperator
 					+ "output" + fileSeperator;
-			String[] dirs = { fileSeperator + "images" + fileSeperator,
-					fileSeperator + "css" + fileSeperator };
+			String[] dirs = { "/images/" , "/css/" };
 			for (String s : dirs) {
 				File startDir = new File(System.getProperty("user.dir")
 						+ fileSeperator + dato + s);
