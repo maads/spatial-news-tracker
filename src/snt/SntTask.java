@@ -217,7 +217,7 @@ public class SntTask extends TimerTask {
 				src = src.substring(0,src.lastIndexOf("?"));
 			}
 			if (src.startsWith("//")){
-				
+			    src = src.substring(2);
 			}else if(src.startsWith("/")){
 				src = selection.baseUri() + src;
 			} else if(!isValid(src)){
@@ -226,16 +226,20 @@ public class SntTask extends TimerTask {
 			
 				
 			String bildeNavn = src.substring(src.lastIndexOf("/") + 1);
-			System.out.println(bildeNavn);
-			fos = new FileOutputStream(new File(dateDay + fileseparator
-					+ "images" + fileseparator + bildeNavn));
-
-			if (!src.startsWith("//"))
-
+			String bildeSti = dateDay + fileseparator
+			+ "images" + fileseparator + bildeNavn;
+			if (!fileExists(bildeSti)) {
+			fos = new FileOutputStream(new File(bildeSti));
 				ImageIO.write((RenderedImage) saveImages(src),
 						bildeNavn.substring(bildeNavn.length() - 3), fos);
+			}
 
 		}
+	}
+
+	private static boolean fileExists(String bildeSti) {
+	    File f = new File(bildeSti);
+	    return f.exists();
 	}
 
 	/**
