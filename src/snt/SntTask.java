@@ -217,7 +217,7 @@ public class SntTask extends TimerTask {
 				src = src.substring(0,src.lastIndexOf("?"));
 			}
 			if (src.startsWith("//")){
-			    src = src.substring(2);
+				src = "http:" + src;
 			}else if(src.startsWith("/")){
 				src = selection.baseUri() + src;
 			} else if(!isValid(src)){
