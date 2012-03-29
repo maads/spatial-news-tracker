@@ -19,6 +19,7 @@ import java.sql.Statement;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -68,7 +69,6 @@ public class Search extends JFrame {
 							ResultSet rs = stat
 									.executeQuery("select distinct path from avisArtikler where url = '"
 											+ getInputField() + "';");
-
 							while (rs.next()) {
 								counter++;
 								String path = rs.getString("path");
@@ -83,10 +83,11 @@ public class Search extends JFrame {
 														.indexOf(fileSeperator)),
 										markArticleinFile(getInputField(), doc));
 							}
+							String beskjed = "Fant artikkelen på " + counter + " forsider.";
+							if(counter > 0)
+							    beskjed +=  "\nKikk i " + pathToFolder;
 							JOptionPane.showMessageDialog(null,
-									"Fant artikkelen på " + counter
-											+ " forsider. Kikk i "
-											+ pathToFolder);
+									beskjed);
 						} catch (SQLException e) {
 							e.printStackTrace();
 							JOptionPane.showMessageDialog(null,
