@@ -14,11 +14,11 @@ public class TaskAL implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-	intervall = SntGUI.getInterval();
-	if(intervall > 0) {
-	    SntGUI.updateGUIafterLaunch();
-	    new Snt(intervall);
-	}
+intervall = SntGUI.getInterval();
+if(intervall > 0) {
+SntGUI.updateGUIafterLaunch();
+new Snt(intervall);
+}
     }
 
 }
