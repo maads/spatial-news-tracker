@@ -273,16 +273,11 @@ public class SntTask extends TimerTask {
 	private static boolean exists(String url, String path) {
 		Statement stat;
 		try {
-			String tempPath = path;
-			
-			System.out.println(tempPath.toString());
 			stat = conn.createStatement();
 			ResultSet rs = stat
 					.executeQuery("SELECT count(*) FROM avisArtikler WHERE url ='"
 							+ url + "' and path='" + path + "'");
-			System.out.println(path);
 			if (rs.getInt(1) > 0){
-				System.out.println(url +","+ path);
 				return true;
 			}
 			
