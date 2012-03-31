@@ -71,7 +71,7 @@ public class SntTask extends TimerTask {
 						+ ".html";
 				doc = Jsoup.connect("http://vg.no").get();
 				Elements artikler = doc.select(".article-content");
-				articleURLs = doc.select("a[href]");
+				articleURLs = artikler.select("a[href]");
 				initDB();
 				insertArticleInDB();
 				getImages(doc);
@@ -267,23 +267,29 @@ public class SntTask extends TimerTask {
 		new SntTask();
 	}
 
-	static String filepath;
-	static Connection conn;
+	private static String filepath;
+	private static Connection conn;
 
 	private static boolean exists(String url, String path) {
 		Statement stat;
 		try {
+			String tempPath = path;
+			
+			System.out.println(tempPath.toString());
 			stat = conn.createStatement();
 			ResultSet rs = stat
-					.executeQuery("select count(*) from avisArtikler where url = '"
-							+ url + "' and path='" + path + "';");
-			if (rs.getInt(1) > 0) {
+					.executeQuery("SELECT count(*) FROM avisArtikler WHERE url ='"
+							+ url + "' and path='" + path + "'");
+			System.out.println(path);
+			if (rs.getInt(1) > 0){
+				System.out.println(url +","+ path);
 				return true;
 			}
-
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
 		return false;
 	}
 
@@ -309,23 +315,20 @@ public class SntTask extends TimerTask {
 
 	static void insertArticleInDB() {
 		if (conn != null) {
-			try {
-				PreparedStatement prep = conn
-						.prepareStatement("insert into avisArtikler values(?,?);");
+			try {			
 				for (Element url : articleURLs) {
 					String rawUrl = url.attr("href");
-					if (isValid(rawUrl)
-							&& !exists(rawUrl, filepath)) { // vil ikke
+				
+					if (isValid(rawUrl) && !exists(rawUrl, filepath)) { // vil ikke
 																	// ha
 						// duplikater
 						// vil vi
 						// vel.
-						prep.setString(1, rawUrl);
-						prep.setString(2, filepath);
-						prep.addBatch();
+					Statement statement = conn.createStatement();
+					statement.execute("insert into avisArtikler values('"+rawUrl +"','"+filepath + "');");
+
 					}
 				}
-				prep.executeBatch();
 				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
