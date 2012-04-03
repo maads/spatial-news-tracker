@@ -19,7 +19,6 @@ import java.sql.Statement;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -42,15 +41,23 @@ public class Search extends JFrame {
 
 	private String fileSeperator = System.getProperty("file.separator");
 
-	public Search() {
-		initGUI();
+	static String searchURL;
+	static boolean exportOption;
+
+	public Search(boolean showGUI) {
+		if (showGUI) {
+			initGUI();
+		} else {
+			searchDatabase(showGUI);
+		}
 	}
 
 	private void initGUI() {
 		urlInputField = new JTextField("Lim inn artikkel-URL");
 		setLayout(new GridLayout(0, 1));
 		searchBtn = new JButton("Generer 'tidslinje' basert på artikkel");
-		exportCheckbox = new JCheckBox("Kopier filer fra opprinnelig plassering til ny mappe");
+		exportCheckbox = new JCheckBox(
+				"Kopier filer fra opprinnelig plassering til ny mappe");
 		this.add(urlInputField);
 		this.add(exportCheckbox);
 		this.add(searchBtn);
@@ -58,47 +65,9 @@ public class Search extends JFrame {
 					// actionListner
 
 					public void actionPerformed(ActionEvent arg0) {
-						initDB();
-						int counter = 0;
-						String pathToFolder = System.getProperty("user.dir")
-								+ fileSeperator + "output";
-						Statement stat;
-						try {
-							makeDirs();
-							stat = conn.createStatement();
-							ResultSet rs = stat
-									.executeQuery("select distinct path from avisArtikler where url = '"
-											+ getInputField() + "';");
-							while (rs.next()) {
-								counter++;
-								String path = rs.getString("path");
-								path = path.replace("\\", fileSeperator);
-								Document doc = Jsoup.parse(new File(path),
-										"UTF-8");
-								fixCSSandImages(doc, exportCheckbox.isSelected());
-								WriteToFile(
-										"output"
-												+ fileSeperator
-												+ path.substring(path
-														.indexOf(fileSeperator)),
-										markArticleinFile(getInputField(), doc));
-							}
-							String beskjed = "Fant artikkelen på " + counter + " forsider.";
-							if(counter > 0)
-							    beskjed +=  "\nKikk i " + pathToFolder;
-							JOptionPane.showMessageDialog(null,
-									beskjed);
-						} catch (SQLException e) {
-							e.printStackTrace();
-							JOptionPane.showMessageDialog(null,
-									"Noe gikk galt. \n" + e.getMessage());
-						} catch (Exception e) {
-							JOptionPane.showMessageDialog(null,
-									"Noe gikk galt. \n" + e.getMessage());
-							e.printStackTrace();
-						} finally {
-							closeWindow();
-						}
+						exportOption = exportCheckbox.isSelected();
+						searchURL = getInputField();
+						searchDatabase(true);
 
 					}
 
@@ -113,15 +82,15 @@ public class Search extends JFrame {
 		if (!f.exists()) {
 			f.mkdir();
 		}
-		if (exportCheckbox.isSelected()) {
-		    f = new File("output" + fileSeperator + "css");
-		    if (!f.exists()) {
-			f.mkdir();
-		    }
-		    f = new File("output" + fileSeperator + "images");
-		    if (!f.exists()) {
-			f.mkdir();
-		    }
+		if (exportOption) {
+			f = new File("output" + fileSeperator + "css");
+			if (!f.exists()) {
+				f.mkdir();
+			}
+			f = new File("output" + fileSeperator + "images");
+			if (!f.exists()) {
+				f.mkdir();
+			}
 		}
 	}
 
@@ -154,7 +123,6 @@ public class Search extends JFrame {
 			Elements articleLinks = article.select("a[href]");
 			for (int i = 0; i < articleLinks.size(); i++) {
 				if (articleLinks.get(i).attr("href").equals(url)) {
-					System.out.println(url);
 					article.attr("style", "background-color:yellow;");
 					break;
 				}
@@ -170,7 +138,6 @@ public class Search extends JFrame {
 				doc.baseUri().lastIndexOf(fileSeperator));
 		String dato = tempDato.substring(
 				tempDato.lastIndexOf(fileSeperator) + 1, tempDato.length());
-		System.out.println(dato);
 		Elements csss = doc.select("link[type=text/css]");
 		if (!export) {
 			for (Element cs : csss) {
@@ -180,13 +147,12 @@ public class Search extends JFrame {
 			Elements imgs = doc.select("img[src]");
 			for (Element img : imgs) {
 				String prevLink = img.attr("src");
-				img.attr("src", "../" + dato + "/"
-						+ prevLink);
+				img.attr("src", "../" + dato + "/" + prevLink);
 			}
 		} else {
 			String output = System.getProperty("user.dir") + fileSeperator
 					+ "output" + fileSeperator;
-			String[] dirs = { "/images/" , "/css/" };
+			String[] dirs = { "/images/", "/css/" };
 			for (String s : dirs) {
 				File startDir = new File(System.getProperty("user.dir")
 						+ fileSeperator + dato + s);
@@ -214,6 +180,60 @@ public class Search extends JFrame {
 		out.close();
 	}
 
+	private void searchDatabase(boolean guiVisible) {
+		initDB();
+		int counter = 0;
+		String pathToFolder = System.getProperty("user.dir") + fileSeperator
+				+ "output";
+		Statement stat;
+		try {
+			makeDirs();
+			stat = conn.createStatement();
+			ResultSet rs = stat
+					.executeQuery("select distinct path from avisArtikler where url = '"
+							+ searchURL + "';");
+			while (rs.next()) {
+				counter++;
+				String path = rs.getString("path");
+				path = path.replace("\\", fileSeperator);
+				Document doc = Jsoup.parse(new File(path), "UTF-8");
+				fixCSSandImages(doc, exportOption);
+				WriteToFile(
+						"output" + fileSeperator
+								+ path.substring(path.indexOf(fileSeperator)),
+						markArticleinFile(searchURL, doc));
+			}
+			String beskjed = "Fant artikkelen på " + counter + " forsider.";
+			if (counter > 0)
+				beskjed += "\nKikk i " + pathToFolder;
+			if (guiVisible) {
+				JOptionPane.showMessageDialog(null, beskjed);
+			} else {
+				System.out.println(beskjed);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			if (guiVisible) {
+				JOptionPane.showMessageDialog(null,
+						"Noe gikk galt. \n" + e.getMessage());
+			} else {
+				System.out.println("Noe gikk galt. \n" + e.getMessage());
+				e.printStackTrace();
+			}
+		} catch (Exception e) {
+			if (guiVisible) {
+				JOptionPane.showMessageDialog(null,
+						"Noe gikk galt. \n" + e.getMessage());
+			} else {
+				System.out.println("Noe gikk galt. \n");
+				e.printStackTrace();
+			}
+		} finally {
+			closeWindow();
+		}
+	}
+
 	public static void WriteToFile(String pathToNewFile, String output) {
 		try {
 			BufferedWriter out = new BufferedWriter(new FileWriter(
@@ -226,6 +246,15 @@ public class Search extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		new Search();
+		boolean showGUI = true;
+		if (args.length > 0) {
+			searchURL = args[0];
+			if (args.length > 1) {
+				exportOption = args[1].equals("export");
+			}
+			System.out.println("Artikkelen du søker: " + searchURL);
+			showGUI = false;
+		}
+		new Search(showGUI);
 	}
 }
