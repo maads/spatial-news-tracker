@@ -310,7 +310,8 @@ public class SntTask extends TimerTask {
 
 	static void insertArticleInDB() {
 		if (conn != null) {
-			try {			
+			try {
+				PreparedStatement prep = conn.prepareStatement("insert into avisArtikler values(?,?);");
 				for (Element url : articleURLs) {
 					String rawUrl = url.attr("href");
 				
@@ -319,9 +320,9 @@ public class SntTask extends TimerTask {
 						// duplikater
 						// vil vi
 						// vel.
-					Statement statement = conn.createStatement();
-					statement.execute("insert into avisArtikler values('"+rawUrl +"','"+filepath + "');");
-
+						 prep.setString(1, rawUrl);
+						 prep.setString(2, filepath);
+						 prep.execute();
 					}
 				}
 				conn.close();
