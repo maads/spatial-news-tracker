@@ -69,7 +69,7 @@ public class SntTask extends TimerTask {
 
 				filepath = dateDay + fileseparator + "VG-" + dateNow
 						+ ".html";
-				doc = Jsoup.connect("http://vg.no").get();
+				doc = Jsoup.connect("http://VG.no").get();
 				Elements artikler = doc.select(".article-content");
 				articleURLs = artikler.select("a[href]");
 				initDB();
@@ -230,8 +230,11 @@ public class SntTask extends TimerTask {
 			+ "images" + fileseparator + bildeNavn;
 			if (!fileExists(bildeSti)) {
 			fos = new FileOutputStream(new File(bildeSti));
-				ImageIO.write((RenderedImage) saveImages(src),
+				RenderedImage imgx = (RenderedImage) saveImages(src);
+				if(imgx != null){
+				ImageIO.write(imgx,
 						bildeNavn.substring(bildeNavn.length() - 3), fos);
+				}
 			}
 
 		}
