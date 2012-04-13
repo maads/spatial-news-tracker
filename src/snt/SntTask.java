@@ -69,12 +69,12 @@ public class SntTask extends TimerTask {
 
 				filepath = dateDay + fileseparator + "VG-" + dateNow
 						+ ".html";
-				doc = Jsoup.connect("http://vg.no").get();
+				doc = Jsoup.connect("http://VG.no").get();
 				Elements artikler = doc.select(".article-content");
-				articleURLs = doc.select("a[href]");
+				articleURLs = artikler.select("a[href]");
 				initDB();
 				insertArticleInDB();
-				getImages(artikler);
+				getImages(doc);
 				Document docRelativeLinker = gjorForsidenRelativ(doc);
 				WriteToFileLineByLine(dateDay + fileseparator + "VG-" + dateNow
 						+ ".html", docRelativeLinker.html());
@@ -107,8 +107,10 @@ public class SntTask extends TimerTask {
 
 		// skifte ut csslink til den paa disk
 		Elements csss = doc.select("link[type=text/css]");
+		
+		// TODO hent ned alle css filer og putt de i samme fil :D 
 		for (Element css : csss) {
-			css.attr("href", "css/general.css");
+			css.attr("href", "css/"+ dateDay + ".css");
 		}
 
 		// fjern <noscript>
@@ -141,13 +143,16 @@ public class SntTask extends TimerTask {
 	private static void lagreCSS(Document doc) {
 		// last ned css til /css/
 		List<String> cssURl = getCSSlink(doc);
+		StringBuilder cssContent = new StringBuilder();
 		for (String css : cssURl) {
-			try {
-				WriteToFileLineByLine(dateDay + fileseparator + "css"
-						+ fileseparator + "general.css", getURLContent(css));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			cssContent.append(getURLContent(css));
+		}
+		
+		try {
+			WriteToFileLineByLine(dateDay + fileseparator + "css"
+					+ fileseparator + dateDay + ".css", cssContent.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -198,7 +203,7 @@ public class SntTask extends TimerTask {
 		return null;
 	}
 
-	private static void getImages(Elements selection) throws IOException {
+	private static void getImages(Document selection) throws IOException {
 		makeFolderIfNotExists(dateDay);
 		makeFolderIfNotExists(dateDay + fileseparator + "images");
 
@@ -206,20 +211,38 @@ public class SntTask extends TimerTask {
 		Elements artikkelBilderTags = selection.select("img[src]");
 		for (Element img : artikkelBilderTags) {
 			String src = img.attr("src");
-			if (!src.contains("?")) {
-				String bildeNavn = src.substring(src.lastIndexOf("/") + 1);
-
-				fos = new FileOutputStream(new File(dateDay + fileseparator
-						+ "images" + fileseparator + bildeNavn));
-
-				if (!src.startsWith("//"))
-
-					ImageIO.write((RenderedImage) saveImages(src),
-							bildeNavn.substring(bildeNavn.length() - 3), fos);
-			} else {
-				// System.out.println("Skippet denne: " + src);
+			
+			
+			if (src.contains("?")) {
+				src = src.substring(0,src.lastIndexOf("?"));
 			}
+			if (src.startsWith("//")){
+				src = "http:" + src;
+			}else if(src.startsWith("/")){
+				src = selection.baseUri() + src;
+			} else if(!isValid(src)){
+				src = selection.baseUri() + src;
+			}
+			
+				
+			String bildeNavn = src.substring(src.lastIndexOf("/") + 1);
+			String bildeSti = dateDay + fileseparator
+			+ "images" + fileseparator + bildeNavn;
+			if (!fileExists(bildeSti)) {
+			fos = new FileOutputStream(new File(bildeSti));
+				RenderedImage imgx = (RenderedImage) saveImages(src);
+				if(imgx != null){
+				ImageIO.write(imgx,
+						bildeNavn.substring(bildeNavn.length() - 3), fos);
+				}
+			}
+
 		}
+	}
+
+	private static boolean fileExists(String bildeSti) {
+	    File f = new File(bildeSti);
+	    return f.exists();
 	}
 
 	/**
@@ -247,23 +270,24 @@ public class SntTask extends TimerTask {
 		new SntTask();
 	}
 
-	static String filepath;
-	static Connection conn;
+	private static String filepath;
+	private static Connection conn;
 
 	private static boolean exists(String url, String path) {
 		Statement stat;
 		try {
 			stat = conn.createStatement();
 			ResultSet rs = stat
-					.executeQuery("select count(*) from avisArtikler where url = '"
-							+ url + "' and path='" + path + "';");
-			if (rs.getInt(1) > 0) {
+					.executeQuery("SELECT count(*) FROM avisArtikler WHERE url ='"
+							+ url + "' and path='" + path + "'");
+			if (rs.getInt(1) > 0){
 				return true;
 			}
-
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
 		return false;
 	}
 
@@ -290,22 +314,20 @@ public class SntTask extends TimerTask {
 	static void insertArticleInDB() {
 		if (conn != null) {
 			try {
-				PreparedStatement prep = conn
-						.prepareStatement("insert into avisArtikler values(?,?);");
+				PreparedStatement prep = conn.prepareStatement("insert into avisArtikler values(?,?);");
 				for (Element url : articleURLs) {
 					String rawUrl = url.attr("href");
-					if (isValid(rawUrl)
-							&& !exists(rawUrl, filepath)) { // vil ikke
+				
+					if (isValid(rawUrl) && !exists(rawUrl, filepath)) { // vil ikke
 																	// ha
 						// duplikater
 						// vil vi
 						// vel.
-						prep.setString(1, rawUrl);
-						prep.setString(2, filepath);
-						prep.addBatch();
+						 prep.setString(1, rawUrl);
+						 prep.setString(2, filepath);
+						 prep.execute();
 					}
 				}
-				prep.executeBatch();
 				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
