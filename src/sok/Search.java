@@ -28,6 +28,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import util.SNTUtil;
+
 /**
  * @author Mads,
  * 
@@ -198,7 +200,7 @@ public class Search extends JFrame {
 				path = path.replace("\\", fileSeperator);
 				Document doc = Jsoup.parse(new File(path), "UTF-8");
 				fixCSSandImages(doc, exportOption);
-				WriteToFile(
+				SNTUtil.WriteToFileLineByLine(
 						"output" + fileSeperator
 								+ path.substring(path.indexOf(fileSeperator)),
 						markArticleinFile(searchURL, doc));
@@ -234,16 +236,16 @@ public class Search extends JFrame {
 		}
 	}
 
-	public static void WriteToFile(String pathToNewFile, String output) {
-		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(
-					pathToNewFile));
-			out.write(output);
-			out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+//	public static void WriteToFile(String pathToNewFile, String output) {
+//		try {
+//			BufferedWriter out = new BufferedWriter(new FileWriter(
+//					pathToNewFile));
+//			out.write(output);
+//			out.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	public static void main(String[] args) {
 		boolean showGUI = true;

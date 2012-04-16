@@ -33,6 +33,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import util.SNTUtil;
+
 public class SntTask extends TimerTask {
 	private static String fileseparator = System.getProperty("file.separator");
 	static DateFormat dateFormat = new SimpleDateFormat("HH.mm.ss_dd-MM-yyyy");
@@ -45,7 +47,7 @@ public class SntTask extends TimerTask {
 	public SntTask() {
 		Document doc = null;
 		try {
-			doc = Jsoup.connect("http://vg.no").get();
+			doc = Jsoup.connect("http://nrk.no").get();
 			Elements artiklerTilHash = doc.select(".article-content");
 
 			// mekk artikler uten dynamiske linker til bilder og saa hash
@@ -67,16 +69,16 @@ public class SntTask extends TimerTask {
 				System.out.println(dateNow + "  " + newHash);
 				Snt.latestHash = newHash;
 
-				filepath = dateDay + fileseparator + "VG-" + dateNow
+				filepath = dateDay + fileseparator + "nrk-" + dateNow
 						+ ".html";
-				doc = Jsoup.connect("http://VG.no").get();
+				doc = Jsoup.connect("http://nrk.no").get();
 				Elements artikler = doc.select(".article-content");
 				articleURLs = artikler.select("a[href]");
 				initDB();
 				insertArticleInDB();
 				getImages(doc);
 				Document docRelativeLinker = gjorForsidenRelativ(doc);
-				WriteToFileLineByLine(dateDay + fileseparator + "VG-" + dateNow
+				SNTUtil.WriteToFileLineByLine(dateDay + fileseparator + "NRK-" + dateNow
 						+ ".html", docRelativeLinker.html());
 			}
 
@@ -149,20 +151,8 @@ public class SntTask extends TimerTask {
 		}
 		
 		try {
-			WriteToFileLineByLine(dateDay + fileseparator + "css"
+			SNTUtil.WriteToFileLineByLine(dateDay + fileseparator + "css"
 					+ fileseparator + dateDay + ".css", cssContent.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void WriteToFileLineByLine(String pathToNewFile, String output)
-			throws IOException {
-		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(
-					pathToNewFile));
-			out.write(output);
-			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
