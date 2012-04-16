@@ -1,6 +1,7 @@
 package sok;
 
 import java.awt.GridLayout;
+import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
@@ -16,6 +17,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -184,6 +186,7 @@ public class Search extends JFrame {
 
 	private void searchDatabase(boolean guiVisible) {
 		initDB();
+		ArrayList<String> urls = new ArrayList<String>();
 		int counter = 0;
 		String pathToFolder = System.getProperty("user.dir") + fileSeperator
 				+ "output";
@@ -204,7 +207,9 @@ public class Search extends JFrame {
 						"output" + fileSeperator
 								+ path.substring(path.indexOf(fileSeperator)),
 						markArticleinFile(searchURL, doc));
+				urls.add(path.substring(path.indexOf(fileSeperator) + 1));
 			}
+			new JSViewer(urls);
 			String beskjed = "Fant artikkelen på " + counter + " forsider.";
 			if (counter > 0)
 				beskjed += "\nKikk i " + pathToFolder;
@@ -235,17 +240,6 @@ public class Search extends JFrame {
 			closeWindow();
 		}
 	}
-
-//	public static void WriteToFile(String pathToNewFile, String output) {
-//		try {
-//			BufferedWriter out = new BufferedWriter(new FileWriter(
-//					pathToNewFile));
-//			out.write(output);
-//			out.close();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//	}
 
 	public static void main(String[] args) {
 		boolean showGUI = true;
