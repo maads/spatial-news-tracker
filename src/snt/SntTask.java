@@ -47,7 +47,7 @@ public class SntTask extends TimerTask {
 	public SntTask() {
 		Document doc = null;
 		try {
-			doc = Jsoup.connect("http://nrk.no").get();
+			doc = Jsoup.connect("http://vg.no").get();
 			Elements artiklerTilHash = doc.select(".article-content");
 
 			// mekk artikler uten dynamiske linker til bilder og saa hash
@@ -69,16 +69,16 @@ public class SntTask extends TimerTask {
 				System.out.println(dateNow + "  " + newHash);
 				Snt.latestHash = newHash;
 
-				filepath = dateDay + fileseparator + "nrk-" + dateNow
+				filepath = dateDay + fileseparator + "VG-" + dateNow
 						+ ".html";
-				doc = Jsoup.connect("http://nrk.no").get();
+				doc = Jsoup.connect("http://VG.no").get();
 				Elements artikler = doc.select(".article-content");
 				articleURLs = artikler.select("a[href]");
 				initDB();
 				insertArticleInDB();
 				getImages(doc);
 				Document docRelativeLinker = gjorForsidenRelativ(doc);
-				SNTUtil.WriteToFileLineByLine(dateDay + fileseparator + "NRK-" + dateNow
+				SNTUtil.WriteToFileLineByLine(dateDay + fileseparator + "VG-" + dateNow
 						+ ".html", docRelativeLinker.html());
 			}
 
