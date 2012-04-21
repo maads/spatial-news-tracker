@@ -71,7 +71,7 @@ public class SntTask extends TimerTask {
 
 				filepath = dateDay + fileseparator + "VG-" + dateNow
 						+ ".html";
-				doc = Jsoup.connect("http://VG.no").get();
+				doc = Jsoup.connect("http://vg.no").get();
 				Elements artikler = doc.select(".article-content");
 				articleURLs = artikler.select("a[href]");
 				initDB();
@@ -113,6 +113,12 @@ public class SntTask extends TimerTask {
 		// TODO hent ned alle css filer og putt de i samme fil :D 
 		for (Element css : csss) {
 			css.attr("href", "css/"+ dateDay + ".css");
+		}
+		
+		// fjern javascript
+		Elements js = doc.select("script[type=text/javascript]");
+		for(Element j : js){
+			j.attr("src", "");
 		}
 
 		// fjern <noscript>
